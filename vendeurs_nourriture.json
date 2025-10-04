@@ -1,0 +1,24 @@
+{
+  "nourriture": [
+    "AUCHAN SUPERMAR",
+    "BABA FRUITS",
+    "BIOCOOP MALHERBE",
+    "BOUCHER MALHERBE",
+    "FRANPRIX",
+    "LECLERC COMBOIRE",
+    "LECOPAIN D ANTAN",
+    "LES ROTISSERIES",
+    "MONT VRAC",
+    "OLI & SY",
+    "PAIN DES CAIRNS",
+    "PICARD SURGELES",
+    "SNC L'EAU VIVE"
+  ],
+  "non_nourriture": [
+    "AUCHAN DAC 260",
+    "ENTREPOT BRICO",
+    "IKEA CSC E COMM",
+    "LEROY MERLIN",
+    "www.glady.com"
+  ]
+}
