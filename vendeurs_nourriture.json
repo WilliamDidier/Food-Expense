@@ -4,21 +4,35 @@
     "BABA FRUITS",
     "BIOCOOP MALHERBE",
     "BOUCHER MALHERBE",
+    "CARREFOUR ASIATI",
     "FRANPRIX",
+    "FRANTOIO OLEARIO SPORTEL",
+    "GD MARKET",
+    "ISERE PRIMEURS",
+    "LA FERME DES CH",
     "LECLERC COMBOIRE",
     "LECOPAIN D ANTAN",
     "LES ROTISSERIES",
     "MONT VRAC",
     "OLI & SY",
     "PAIN DES CAIRNS",
+    "PASTICCERIA STELLA",
     "PICARD SURGELES",
-    "SNC L'EAU VIVE"
+    "SARL MASTROT",
+    "SAS ENZO",
+    "SNC L'EAU VIVE",
+    "SUPERMERCATO DOK"
   ],
   "non_nourriture": [
     "AUCHAN DAC 260",
+    "BF CAR",
+    "CASTORAMA",
+    "DECATHLON LATRON",
     "ENTREPOT BRICO",
     "IKEA CSC E COMM",
+    "INTERMARCHE DAC",
     "LEROY MERLIN",
+    "SAINT MARTIN 1",
     "www.glady.com"
   ]
 }
