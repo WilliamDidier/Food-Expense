@@ -10,7 +10,7 @@ class FoodExpenseClassifier:
         self.history_file = "historique_depenses.json"
         self.load_config()
         self.load_history()
-    
+        
     def load_config(self):
         """Charge la configuration des vendeurs connus"""
         if os.path.exists(self.config_file):
@@ -39,9 +39,16 @@ class FoodExpenseClassifier:
         else:
             self.history = {}
     
-    def save_history(self, month, total):
-        """Sauvegarde le total d'un mois dans l'historique"""
-        self.history[month] = total
+    def save_history(self, month, total, vendor_details=None):
+        """Sauvegarde le total d'un mois et les détails par vendeur dans l'historique"""
+        if vendor_details:
+            self.history[month] = {
+                'total': total,
+                'vendeurs': dict(sorted(vendor_details.items()))
+            }
+        else:
+            self.history[month] = {'total': total, 'vendeurs': {}}
+        
         with open(self.history_file, 'w', encoding='utf-8') as f:
             json.dump(self.history, f, ensure_ascii=False, indent=2)
     
@@ -88,6 +95,36 @@ class FoodExpenseClassifier:
             return 0.0
         return float(amount_str.replace(',', '.'))
     
+    def get_tuesdays_count(self, year_month):
+        """Compte le nombre de mardis dans le mois"""
+        year, month = map(int, year_month.split('-'))
+        tuesdays = 0
+        for day in range(1, 32):
+            try:
+                date = datetime(year, month, day)
+                if date.weekday() == 1:  # 1 = mardi
+                    tuesdays += 1
+            except ValueError:
+                break
+        return tuesdays
+    
+    def prompt_amap_baskets(self, default_tuesdays):
+        """Demande à l'utilisateur le nombre de paniers AMAP, avec validation."""
+        prompt = f"Entrez un entier pour modifier le nombre de paniers d'AMAP ({default_tuesdays}), sinon pressez Entrée : "
+        value = input(prompt).strip()
+        if value:
+            try:
+                return int(value)
+            except ValueError:
+                print("Valeur invalide, utilisation du nombre de mardis du mois.")
+        return default_tuesdays
+    
+    def calculate_amap_cost(self, month_key, price_per_basket = 15.0, tuesdays = None):
+        """Calcule le coût AMAP pour le mois (15€ par mardi par défaut)"""
+        if tuesdays is None:
+            tuesdays = self.get_tuesdays_count(month_key)
+        return -(tuesdays * price_per_basket)
+    
     def process_csv(self, csv_file):
         """Traite le fichier CSV et calcule les dépenses alimentaires"""
         total = 0.0
@@ -128,10 +165,17 @@ class FoodExpenseClassifier:
             amount = self.parse_amount(debit)
             total += amount
             vendor_totals[vendor] += amount
-
+        
+        tuesdays = self.get_tuesdays_count(month_key) if month_key else 0
+        baskets = self.prompt_amap_baskets(tuesdays)
+        # Ajoute le coût AMAP
+        if month_key:
+            amap_cost = baskets * -15.0
+            total += amap_cost
+            vendor_totals['AMAP'] += amap_cost
         # Sauvegarde dans l'historique
         if month_key:
-            self.save_history(month_key, total)
+            self.save_history(month_key, total, vendor_totals)
     
         return month_key, total, vendor_totals
     
@@ -152,7 +196,11 @@ class FoodExpenseClassifier:
         print("HISTORIQUE COMPLET")
         print("-"*50)
         for hist_month in sorted(self.history.keys()):
-            hist_total = self.history[hist_month]
+            hist_data = self.history[hist_month]
+            if isinstance(hist_data, dict):
+                hist_total = hist_data.get('total', 0)
+            else:
+                hist_total = hist_data
             print(f"{hist_month} : {hist_total:.2f} €")
         print("="*50)
         print()
@@ -165,6 +213,7 @@ def main():
     if not os.path.exists(csv_file):
         print(f"Erreur : Le fichier '{csv_file}' n'existe pas.")
         return
+
     
     classifier = FoodExpenseClassifier()
     month, total, vendor_totals = classifier.process_csv(csv_file)
