@@ -108,22 +108,25 @@ class FoodExpenseClassifier:
                 break
         return tuesdays
     
-    def prompt_amap_baskets(self, default_tuesdays):
-        """Demande à l'utilisateur le nombre de paniers AMAP, avec validation."""
-        prompt = f"Entrez un entier pour modifier le nombre de paniers d'AMAP ({default_tuesdays}), sinon pressez Entrée : "
-        value = input(prompt).strip()
-        if value:
-            try:
-                return int(value)
-            except ValueError:
-                print("Valeur invalide, utilisation du nombre de mardis du mois.")
-        return default_tuesdays
-    
-    def calculate_amap_cost(self, month_key, price_per_basket = 15.0, tuesdays = None):
-        """Calcule le coût AMAP pour le mois (15€ par mardi par défaut)"""
-        if tuesdays is None:
-            tuesdays = self.get_tuesdays_count(month_key)
-        return -(tuesdays * price_per_basket)
+    def prompt_amap_deliveries(self, default_tuesdays):
+        """Demande le nombre de livraisons AMAP par type, avec validation."""
+        def ask(label, default):
+            value = input(f"Nombre de livraisons {label} ({default}) : ").strip()
+            if value:
+                try:
+                    return int(value)
+                except ValueError:
+                    print("Valeur invalide, utilisation de la valeur par défaut.")
+            return default
+
+        vegetable = ask("de légumes (15 €)", default_tuesdays)
+        egg = ask("d'œufs (6 €)", default_tuesdays)
+        coffee = ask("de café (35 €)", 1)
+        return vegetable, egg, coffee
+
+    def calculate_amap_cost(self, vegetable, egg, coffee):
+        """Calcule le coût AMAP total pour le mois."""
+        return -(vegetable * 15.0 + egg * 6.0 + coffee * 35.0)
     
     def process_csv(self, csv_file):
         """Traite le fichier CSV et calcule les dépenses alimentaires"""
@@ -167,10 +170,9 @@ class FoodExpenseClassifier:
             vendor_totals[vendor] += amount
         
         tuesdays = self.get_tuesdays_count(month_key) if month_key else 0
-        baskets = self.prompt_amap_baskets(tuesdays)
-        # Ajoute le coût AMAP
+        vegetable, egg, coffee = self.prompt_amap_deliveries(tuesdays)
         if month_key:
-            amap_cost = baskets * -15.0
+            amap_cost = self.calculate_amap_cost(vegetable, egg, coffee)
             total += amap_cost
             vendor_totals['AMAP'] += amap_cost
         # Sauvegarde dans l'historique
